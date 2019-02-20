@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>New Emscripten Shell</title>
+    <link href="shell.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div class="input_box">&nbsp;</div>
+    <div class="input_box">
+    <button id="click_me" class="em_button">Click Me!</button>
+    </div>
+    <div class="input_box">
+    <input type="number" id="int_num" max="9999" min="0" step="1" value="1" class="em_input">
+    <button id="int_button" class="em_button">Int Click!</button>
+    </div>
+    <div class="input_box">
+    <input type="number" id="float_num" max="99" min="0" step="0.01" value="0.0" class="em_input">
+    <button id="float_button" class="em_button">Float Click!</button>
+    </div>
+    <div class="input_box">&nbsp;</div>
+
+    <textarea class="em_textarea" id="output" rows="8"></textarea>
+    <div id="string_box">
+        <button id="string_button" class="em_button">String Click!</button>
+        <input id="string_input">
+    </div>
+    <script type='text/javascript'>
+    function InitWrappers() {
+        var test = Module.cwrap('test', 'undefined');
+        var int_test = Module.cwrap('int_test', 'undefined', ['int']);
+        var float_test = Module.cwrap('float_test', 'undefined', ['float']);
+        var string_test = Module.cwrap('string_test', 'undefined', ['string']);
+
+        document.getElementById("int_button").onclick = function() {
+            if( int_test != null ) {
+                int_test(document.getElementById('int_num').value);
+            }
+        }
+
+        document.getElementById("string_button").onclick = function() {
+            if( string_test != null ) {
+                string_test(document.getElementById('string_input').value);
+            }
+        }
+
+        document.getElementById("float_button").onclick = function() {
+            if( float_test != null ) {
+                float_test(document.getElementById('float_num').value);
+            }
+        }
+
+        document.getElementById("click_me").onclick = function() {
+            if( test != null ) {
+                test();
+            }
+        }
+    }
+
+    function runbefore() {
+        console.log("before module load");
+    }
+
+    function runafter() {
+        console.log("after module load");
+    }
+
+    var Module = {
+        preRun: [runbefore],
+        postRun: [runafter],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            /*
+            // The printf statement in C is currently writing to a textarea.  If we wanted to instead
+            // write to an HTML tag, we would need to run these lines of codes to make our text HTML safe
+            text = text.replace(/&/g, "&amp;");
+            text = text.replace(/</g, "&lt;");
+            text = text.replace(/>/g, "&gt;");
+            text = text.replace('\n', '<br>', 'g');
+            */
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+
+          };
+        })(),
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          if (0) { // XXX disabled for safety typeof dump == 'function') {
+            dump(text + '\n'); // fast, straight to the real console
+          } else {
+            console.error(text);
+          }
+        },
+        setStatus: function(text) {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.last.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+          } 
+          console.log("status: " + text);
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = function() {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = function(text) {
+          if (text) Module.printErr('[post-exception status] ' + text);
+        };
+    };
+
+    </script>
+    <script async type="text/javascript" src="shell-closure.js"></script>
+  </body>
+</html>
+

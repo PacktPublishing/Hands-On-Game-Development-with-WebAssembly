@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WebGL Shell</title>
+    <link href="webgl.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+
+    <canvas id="canvas" width="800" height="600" oncontextmenu="event.preventDefault()"></canvas>
+    <textarea class="em_textarea" id="output" rows="8"></textarea>
+
+  <script type='text/javascript'>
+    var gl = null;            // WebGLRenderingContext
+    var program = null;       // WebGLProgram
+    var texture = null;       // WebGLTexture
+
+    var img = null;           // HTMLImageElement
+    var canvas = null;
+    var image_width = 0;
+    var image_height = 0;
+
+    var vertex_texture_buffer = null; // WebGLBuffer 
+
+    var a_texcoord_location = null; // GLint
+    var a_position_location = null; // GLint
+
+    var u_translate_location = null; // WebGLUniformLocation
+    var u_texture_location = null;   // WebGLUniformLocation
+
+    var vertex_texture_data = new Float32Array([
+        // data is x, y, u, v
+         0.16,  0.213, 1.0, 1.0,
+        -0.16,  0.213, 0.0, 1.0,
+         0.16, -0.213, 1.0, 0.0,
+        -0.16, -0.213, 0.0, 0.0,
+        -0.16,  0.213, 0.0, 1.0,
+         0.16, -0.213, 1.0, 0.0
+    ]);
+
+    const FLOAT32_BYTE_SIZE = 4;          // size of a 32 bit float
+    const STRIDE = FLOAT32_BYTE_SIZE * 4; // there are 4 elements for every vertex.  x, y, u, v
+    const XY_OFFSET = FLOAT32_BYTE_SIZE * 0;
+    const UV_OFFSET = FLOAT32_BYTE_SIZE * 2;
+
+    var vertex_shader_code = `
+      precision mediump float;
+
+      attribute vec4 a_position;
+      attribute vec2 a_texcoord;
+
+      varying vec2 v_texcoord;
+
+      uniform vec4 u_translate;
+
+      void main() {
+        gl_Position = u_translate + a_position;
+        v_texcoord = a_texcoord;
+      }
+    `;
+
+    var fragment_shader_code = `
+      precision mediump float;
+
+      varying vec2 v_texcoord;
+
+      uniform sampler2D u_texture;
+
+      void main() {
+        gl_FragColor = texture2D(u_texture, v_texcoord);
+      }
+    `;
+
+
+
+    function ModuleLoaded() {
+      canvas = document.getElementById('canvas');
+      gl =  canvas.getContext("webgl", { alpha: false }) ||
+            canvas.getContext("experimental-webgl", { alpha: false });
+
+      if (!gl) {
+        console.log("No WebGL support!");
+        return;
+      }
+
+      gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+      gl.enable( gl.BLEND );
+      
+      var vertex_shader = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource( vertex_shader, vertex_shader_code );
+      gl.compileShader( vertex_shader );
+
+      if( !gl.getShaderParameter(vertex_shader, gl.COMPILE_STATUS) ) {
+        console.log('Failed to compile vertex shader' + gl.getShaderInfoLog(vertex_shader));
+        gl.deleteShader(vertex_shader);
+        return;
+      }
+
+      var fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource( fragment_shader, fragment_shader_code );
+      gl.compileShader( fragment_shader );
+
+      if( !gl.getShaderParameter(fragment_shader, gl.COMPILE_STATUS) ) {
+        console.log('Failed to compile fragment shader' + gl.getShaderInfoLog(fragment_shader));
+        gl.deleteShader(fragment_shader);
+        return;
+      }
+
+      program = gl.createProgram(); 
+
+      gl.attachShader(program, vertex_shader);
+      gl.attachShader(program, fragment_shader);
+      gl.linkProgram(program);
+
+      if( !gl.getProgramParameter(program, gl.LINK_STATUS) ) {
+        console.log('Failed to link program');
+        gl.deleteProgram(program);
+        return;
+      }
+
+      gl.useProgram(program);
+
+      u_texture_location = gl.getUniformLocation(program, "u_texture");
+      u_translate_location = gl.getUniformLocation(program, "u_translate");
+
+      a_position_location = gl.getAttribLocation(program, "a_position");
+      a_texcoord_location = gl.getAttribLocation(program, "a_texcoord");      
+
+      vertex_texture_buffer = gl.createBuffer();
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertex_texture_buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertex_texture_data, gl.STATIC_DRAW);
+
+      gl.enableVertexAttribArray(a_position_location);
+      gl.vertexAttribPointer(a_position_location, 2, gl.FLOAT, false, STRIDE, XY_OFFSET);
+
+      gl.enableVertexAttribArray(a_texcoord_location);
+      gl.vertexAttribPointer(a_texcoord_location, 2, gl.FLOAT, false, STRIDE, UV_OFFSET);
+
+      texture = gl.createTexture();
+
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+
+      img = new Image();
+      img.addEventListener('load', function() {
+        image_width = img.width;
+        image_height = img.height;
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, 
+                    gl.UNSIGNED_BYTE, img );
+      });
+
+      img.src = "spaceship.png";
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+}
+
+    function ShipPosition( ship_x, ship_y ) {
+      if( image_width == 0 ) {
+        return;
+      }
+
+      gl.uniform4fv(u_translate_location, [ship_x, ship_y, 0.0, 0.0]); 
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    }
+
+
+    var Module = {
+        preRun: [],
+        postRun: [ModuleLoaded],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            /*
+            // The printf statement in C is currently writing to a textarea.  If we wanted to instead
+            // write to an HTML tag, we would need to run these lines of codes to make our text HTML safe
+            text = text.replace(/&/g, "&amp;");
+            text = text.replace(/</g, "&lt;");
+            text = text.replace(/>/g, "&gt;");
+            text = text.replace('\n', '<br>', 'g');
+            */
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+
+          };
+        })(),
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          if (0) { // XXX disabled for safety typeof dump == 'function') {
+            dump(text + '\n'); // fast, straight to the real console
+          } else {
+            console.error(text);
+          }
+        },
+        canvas: (function() {
+          var canvas = document.getElementById('canvas');
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+          return canvas;
+        })(),        
+        setStatus: function(text) {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.last.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+          } 
+          console.log("status: " + text);
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = function() {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = function(text) {
+          if (text) Module.printErr('[post-exception status] ' + text);
+        };
+    };
+
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>

@@ -1,5 +1,6 @@
 #include <emscripten.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 float ship_x = 0.0;
 float ship_y = 0.0;

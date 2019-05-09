@@ -1,6 +1,7 @@
 #include <emscripten.h>
 #include <stdlib.h>
-
+#include <stdio.h>
+    
 int ship_x = 0;
 int ship_y = 0;
 

@@ -1,0 +1,58 @@
+body {
+    margin-top: 20px;
+}
+
+#output {
+    background-color: darkslategray;
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+    margin-left: auto; 
+    margin-right: auto; 
+    display: block;
+    width: 60%;
+}
+
+#canvas {
+    width: 800px;
+    height: 600px;
+    margin-left: auto; 
+    margin-right: auto; 
+    display: block;
+    background-color: black;
+    margin-bottom: 20px;
+}
+
+.input_box {
+    width: 19%;
+    display: inline-block;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.em_button {
+    width: 45%;
+    height: 40px;
+    background-color: orangered;
+    color: white;
+    border: 0px;
+    font-size: 20px;
+    border-radius: 8px;
+    transition-duration: 0.2s;
+  
+}
+
+.em_button:hover {
+    background-color: orange;
+}
+
+.em_input {
+    width: 45%;
+    height: 20px;
+    font-size: 20px;
+    background-color: darkslategray;
+    color: white;
+    padding: 6px;
+}
+

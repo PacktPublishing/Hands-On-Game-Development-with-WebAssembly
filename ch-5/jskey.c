@@ -1,5 +1,6 @@
 #include <emscripten.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 int main() {
     printf("main has run\n");

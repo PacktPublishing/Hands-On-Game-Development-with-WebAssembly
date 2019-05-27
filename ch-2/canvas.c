@@ -22,8 +22,9 @@ void MoveShip() {
 
 
 int main() {
-    printf("Begin main\n");
+    printf("Hello World\n");
     emscripten_set_main_loop(MoveShip, 0, 0);
+    printf("Initialization Complete\n");
     return 1;
 
 }

@@ -1,8 +1,0 @@
-game.hpp
-
-main.cpp
-render_manager.cpp
-
-ADDED
-ui_button.cpp
-ui_sprite.cpp

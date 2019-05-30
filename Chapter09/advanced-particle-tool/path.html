@@ -1,0 +1,95 @@
+<html>
+<head>
+    <style>
+    #pie {
+    height: 200px; 
+    }        
+    </style>
+
+</head>
+<body>
+    <svg id="pie" viewBox="-1 -1 2 2">
+    </svg>
+    <div style="margin-left: auto; margin-right: auto">
+    <input type="number" id="min_angle" max="359" min="-90" step="1" value="-20" class="em_input">
+    <input type="number" id="max_angle" max="360" min="0" step="1" value="20" class="em_input">
+    </div>
+</body>
+<script>
+    document.getElementById("min_angle").onchange = function() {
+        var min_angle = Number(this.value);
+        var max_angle = Number(document.getElementById("max_angle").value);
+
+        if( min_angle >= max_angle ) {
+            max_angle = min_angle + 1;
+            document.getElementById("max_angle").value = max_angle;
+        }
+
+        if( min_angle < this.min ) {
+            min_angle = this.min;
+            this.value = min_angle;
+        }
+
+        SetPie( min_angle / 180 * Math.PI, max_angle / 180 * Math.PI );
+    }
+
+    document.getElementById("max_angle").onchange = function() {
+        var min_angle = Number(document.getElementById("min_angle").value);
+        var max_angle = Number(this.value); 
+
+        if( min_angle >= max_angle ) {
+            min_angle = max_angle - 1;
+            document.getElementById("min_angle").value = min_angle;
+        }
+
+        if( max_angle > this.max ) {
+            max_angle = this.max;
+            this.value = max_angle;
+        }
+
+        SetPie( min_angle / 180 * Math.PI, max_angle / 180 * Math.PI );
+    }
+
+    function SetPie( start_angle, end_angle ) {
+        const svg = document.getElementById('pie');
+        const start_x = Math.cos( start_angle );
+        const start_y = Math.sin( start_angle );
+
+        const end_x = Math.cos( end_angle );
+        const end_y = Math.sin( end_angle );
+        var arc_flag_1 = 0; 
+        var arc_flag_2 = 1; 
+
+
+        if( end_angle - start_angle < 3.14) {
+            arc_flag_1 = 0; 
+            arc_flag_2 = 1; 
+        }
+        else {
+            arc_flag_1 = 1; 
+            arc_flag_2 = 0; 
+        }
+
+        const path_data_1 = `M ${start_x} ${start_y} A 1 1 0 ${arc_flag_1} 1 ${end_x} ${end_y} L 0 0`;
+
+        // create a <path> and append it to the <svg> element
+        const path_1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path_1.setAttribute('d', path_data_1);
+        path_1.setAttribute('fill', 'red');
+        svg.appendChild(path_1);
+
+        //-------------------------------------------------------
+        const path_data_2 = `M ${end_x} ${end_y} A 1 1 0 ${arc_flag_2} 1 ${start_x} ${start_y} L 0 0`;
+
+        const path_2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path_2.setAttribute('d', path_data_2);
+        path_2.setAttribute('fill', 'blue');
+        svg.appendChild(path_2);
+
+    }
+
+    SetPie( Number(document.getElementById("min_angle").value) / 180 * Math.PI, 
+            Number(document.getElementById("max_angle").value) / 180 * Math.PI );
+    </script>
+
+</html>

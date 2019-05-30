@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>New Emscripten Shell</title>
+    <link href="canvas.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+
+    <canvas id="canvas" width="800" height="600" oncontextmenu="event.preventDefault()"></canvas>
+    <textarea class="em_textarea" id="output" rows="8"></textarea>
+    <img src="spaceship.png" id="spaceship">
+    <script type='text/javascript'>
+
+    var img = null;
+    var canvas = null;
+    var ctx = null;
+
+    function ShipPosition( ship_x, ship_y ) {
+      if( img == null ) {
+        return;
+      }
+
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, 800, 600);
+
+      ctx.save();
+      ctx.translate(ship_x, ship_y);
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+      ctx.restore();
+    }
+
+    function ModuleLoaded() {
+      img = document.getElementById('spaceship');
+      canvas = document.getElementById('canvas');
+      ctx = canvas.getContext("2d");
+    }
+
+    var Module = {
+        preRun: [],
+        postRun: [ModuleLoaded],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            /*
+            // The printf statement in C is currently writing to a textarea.  If we wanted to instead
+            // write to an HTML tag, we would need to run these lines of codes to make our text HTML safe
+            text = text.replace(/&/g, "&amp;");
+            text = text.replace(/</g, "&lt;");
+            text = text.replace(/>/g, "&gt;");
+            text = text.replace('\n', '<br>', 'g');
+            */
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+
+          };
+        })(),
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          if (0) { // XXX disabled for safety typeof dump == 'function') {
+            dump(text + '\n'); // fast, straight to the real console
+          } else {
+            console.error(text);
+          }
+        },
+        canvas: (function() {
+          var canvas = document.getElementById('canvas');
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+          return canvas;
+        })(),        
+        setStatus: function(text) {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.last.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+          } 
+          console.log("status: " + text);
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = function() {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = function(text) {
+          if (text) Module.printErr('[post-exception status] ' + text);
+        };
+    };
+
+    </script>
+    <script async type="text/javascript" src="canvas.js"></script>
+  </body>
+</html>
+

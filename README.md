@@ -9,7 +9,7 @@ This is the code repository for [Hands-On Game Development with WebAssembly](htt
 ## What is this book about?
 Within the next few years, WebAssembly will change the web as we know it. It promises a world where you can write an application for the web in any language, and compile it for native platforms as well as the web.
 
-This book covers the following exciting features: <First 5 What you'll learn points>
+This book covers the following exciting features: 
 * Build web applications with near-native performance using WebAssembly
 * Become familiar with how web applications can be used to create games using HTML5 Canvas, WebGL, and SDL
 * Become well versed with game development concepts such as sprites, animation, particle systems, AI, physics, camera design, sound  effects, and shaders

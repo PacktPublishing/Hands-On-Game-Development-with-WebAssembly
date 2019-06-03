@@ -12,8 +12,7 @@ Within the next few years, WebAssembly will change the web as we know it. It pro
 This book covers the following exciting features: <First 5 What you'll learn points>
 * Build web applications with near-native performance using WebAssembly
 * Become familiar with how web applications can be used to create games using HTML5 Canvas, WebGL, and SDL
-* Become well versed with game development concepts such as sprites, animation, particle systems, AI, physics, camera design, sound     
-  effects, and shaders
+* Become well versed with game development concepts such as sprites, animation, particle systems, AI, physics, camera design, sound  effects, and shaders
 * Deploy C/C++ applications to the browser using WebAssembly and Emscripten
 * Understand how Emscripten HTML shell templates, JavaScript glue code, and a WebAssembly module interact
 

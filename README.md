@@ -37,7 +37,7 @@ The code will look like the following:
 **Following is what you need for this book:**
 Web developers and game developers interested in creating applications for the web using WebAssembly.
 Game developers interested in deploying their games to the web
-Web developers interested in creating applications that are potentially orders of magnitude faster than their existing JavaScript web apps C/C++ developers interested in using their existing skills to deploy applications to the web
+Web developers interested in creating applications that are potentially orders of magnitude faster than their existing JavaScript web apps C/C++ developers interested in using their existing skills to deploy applications to the web.
 
 With the following software and hardware list you can run all code files present in the book (Chapter 1-16).
 

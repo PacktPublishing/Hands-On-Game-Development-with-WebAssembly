@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Hands on WebAssembly</title>
+    <title>New Emscripten Shell</title>
     <link href="shell.css" rel="stylesheet" type="text/css">
   </head>
   <body>
@@ -59,11 +59,11 @@
     }
 
     function runbefore() {
-        console.log("run before");
+        console.log("before module load");
     }
 
     function runafter() {
-        console.log("run before");
+        console.log("after module load");
     }
 
     var Module = {
@@ -74,11 +74,14 @@
           if (element) element.value = ''; // clear browser cache
           return function(text) {
             if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
+            /*
+            // The printf statement in C is currently writing to a textarea.  If we wanted to instead
+            // write to an HTML tag, we would need to run these lines of codes to make our text HTML safe
+            text = text.replace(/&/g, "&amp;");
+            text = text.replace(/</g, "&lt;");
+            text = text.replace(/>/g, "&gt;");
+            text = text.replace('\n', '<br>', 'g');
+            */
             console.log(text);
             if (element) {
               element.value += text + "\n";

@@ -9,6 +9,7 @@ EnemyShip::EnemyShip() {
     m_VX = 0.0;
     m_VY = 0.0;
     m_LastLaunchTime = current_time;
+    m_AIStateTTL = c_AIStateTime;
     
     SDL_Surface *temp_surface = IMG_Load( c_SpriteFile );
     

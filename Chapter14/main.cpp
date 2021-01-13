@@ -293,8 +293,6 @@ void play_render() {
 
     star->Render();
     locator->Render();
-    
-    SDL_RenderPresent( renderer );
 }
 
 void collisions() {
@@ -511,6 +509,7 @@ void game_loop() {
         you_win_sprite->RenderUI();
         play_again_btn->RenderUI();
     }
+    SDL_RenderPresent( renderer );
 }
 
 void play_click() {

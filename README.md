@@ -58,3 +58,7 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 **Author Name**
 Rick Battagline is a game developer who has been working with web- and browser-based technologies since 1997. He wrote his first computer game in 1996 and, in 2006, he founded BattleLine Games LLC., an independent game studio where he works to this day. That same year, his game, Epoch Star, was nominated for an award at the Slamdance Guerrilla Games Competition, and was listed in Game Informer Magazine issue 156 as one of "The top ten games you've never heard of."
 Since then, Rick has written hundreds of games for platforms including the web, Windows PC, iOS, Android, Wii U, and Nintendo Entertainment System emulators. He has developed games in web technologies including WebAssembly, HTML5, WebGL, JavaScript, TypeScript, Flash, and PHP.
+### Download a free PDF
+
+ <i>If you have already purchased a print or Kindle version of this book, you can get a DRM-free PDF version at no cost.<br>Simply click on the link to claim your free PDF.</i>
+<p align="center"> <a href="https://packt.link/free-ebook/9781838644659">https://packt.link/free-ebook/9781838644659 </a> </p>
